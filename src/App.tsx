@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "./components/Navbar";
 import { Footer } from "./components/Footer";
 import { HomePage } from "./pages/HomePage";
@@ -8,7 +9,7 @@ import { CartPage } from "./pages/CartPage";
 import { CheckoutPage } from "./pages/CheckoutPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { CartItem } from "./data/mockData";
-import { toast } from "sonner@2.0.3";
+import { toast } from "sonner";
 
 type Page = 'home' | 'category' | 'product' | 'cart' | 'checkout' | 'profile';
 
@@ -16,6 +17,18 @@ interface NavigationData {
   productId?: string;
   category?: string;
 }
+
+const pageVariants = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 }
+};
+
+const pageTransition = {
+  type: "tween",
+  ease: "anticipate",
+  duration: 0.3
+};
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -58,6 +71,7 @@ export default function App() {
       setCartItems(prev => [...prev, newItem]);
     }
     
+
     toast.success("Item added to cart!");
   };
 
@@ -93,7 +107,6 @@ export default function App() {
   };
 
   const handlePlaceOrder = () => {
-    // Clear cart after successful order
     setCartItems([]);
     toast.success("Order placed successfully!");
   };
@@ -173,14 +186,25 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-gray-900 flex flex-col transition-colors">
       <Navbar
         currentPage={currentPage}
         onNavigate={handleNavigate}
         cartItemsCount={cartItems.reduce((total, item) => total + item.quantity, 0)}
       />
       <main className="flex-1">
-        {renderPage()}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+            transition={pageTransition}
+          >
+            {renderPage()}
+          </motion.div>
+        </AnimatePresence>
       </main>
       <Footer />
     </div>
